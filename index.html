@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>71™ SAZIM & CHISTY—♨️</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Share+Tech+Mono&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      /* NEW INFERNO PALETTE */
+      --bg-1: #0a0a0a; /* Darkest */
+      --bg-2: #140d0d; /* Dark Red-ish */
+      --bg-3: #1f1a1a;
+      --win-color: #f0b90b;   /* Gold for wins/success */
+      --loss-color: #ff1100;  /* Blood red for loss/danger */
+      --accent-color: #ff4800; /* Fiery orange accent */
+      --pending-color: #f0b90b; /* Gold for pending */
+      --glass: rgba(20,13,13,0.85); /* Darker, warmer glass */
+      --muted: #a9a9a9;
+      --text: #f5f5f5;
+      --card-radius: 18px;
+    }
+    /* Reset */
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;padding:0}
+    body{
+      font-family: 'Orbitron', sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(255,17,0,0.03), transparent 10%), /* Red glow */
+        radial-gradient(1000px 500px at 90% 90%, rgba(240,185,11,0.03), transparent 10%), /* Gold glow */
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow:hidden;
+    }
+
+    /* Decorative SVG grid (darker, redder) */
+    body::after{
+      content:"";
+      position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="p" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0 L0 0 L0 80" fill="none" stroke="%23331111" stroke-width="0.7"/></pattern></defs><rect width="100%" height="100%" fill="url(%23p)" opacity="0.06"/></svg>');
+      mix-blend-mode:overlay;
+      transform: translateZ(0);
+    }
+
+    /* Matrix canvas (REMOVED) */
+    
+    /* Main layout container */
+    .wrap {
+      position:relative;
+      z-index:5;
+      width:100%;
+      max-width:1100px;
+      margin:40px auto;
+      padding:30px;
+    }
+
+    /* Card (Glassmorphism REMOVED) */
+    .card {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.45));
+      border-radius: var(--card-radius);
+      padding:28px;
+      border:1px solid rgba(255,255,255,0.03);
+      box-shadow:
+        0 30px 90px rgba(0,0,0,0.75),
+        inset 0 0 80px rgba(255,17,0,0.03); /* Red inner glow */
+      position:relative;
+      overflow:hidden;
+      /* backdrop-filter: blur(6px) saturate(1.05); -- REMOVED */
+    }
+
+    /* Top badge + title */
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; margin-bottom:16px;
+    }
+    .brand {
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo {
+      width:56px; height:56px; border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--loss-color),var(--pending-color)); /* Red/Gold */
+      color:#000; font-weight:900; font-size:20px; box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    }
+    h1{
+      margin:0; font-size:30px; letter-spacing:2px;
+      background:linear-gradient(120deg,var(--pending-color),var(--text),var(--loss-color)); /* Gold/Text/Red */
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .subtitle {font-family:'Share Tech Mono',monospace;color:var(--muted); font-size:13px; margin-top:3px}
+
+    /* Two-column main area */
+    .cols { display:flex; gap:18px; margin-top:18px; align-items:flex-start; flex-wrap:wrap; }
+    .left, .right { flex:1; min-width:300px; }
+
+    /* Prediction panel */
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.28));
+      border-radius:12px; padding:18px; border:1px solid rgba(255,255,255,0.02);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; }
+    .period { font-size:20px; font-weight:800; text-align:center; padding:12px 10px; border-radius:10px; background:linear-gradient(90deg,var(--bg-2),var(--bg-3)); color:var(--pending-color); box-shadow: inset 0 -4px 20px rgba(0,0,0,0.6); }
+    .prediction { font-size:36px; font-weight:900; text-align:center; margin-top:12px; padding:18px; border-radius:12px; background:linear-gradient(90deg, rgba(0,0,0,0.5), rgba(25,25,25,0.6)); color:var(--loss-color); letter-spacing:6px; text-shadow:0 0 16px rgba(255,17,0,0.12); }
+    .bigsmall { margin-top:12px; font-size:26px; text-align:center; padding:14px; border-radius:12px; font-weight:900; background:linear-gradient(90deg, rgba(0,0,0,0.45), rgba(30,30,30,0.65)); border-bottom:4px solid var(--win-color); color:var(--text); }
+
+    /* History list */
+    #historyBox { margin-top:14px; max-height:340px; overflow:auto; padding:10px; border-radius:10px; background:linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.45)); border:1px solid rgba(255,255,255,0.02); font-family:'Share Tech Mono',monospace; }
+    .history-entry { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px; border-radius:10px; margin-bottom:10px; background:linear-gradient(135deg, rgba(255,255,255,0.01), rgba(0,0,0,0.12)); border-left:5px solid var(--loss-color); transition: all 250ms ease; }
+    .history-entry.win { border-left-color: var(--win-color); box-shadow: inset 0 0 12px rgba(240,185,11,0.02); }
+    .history-entry.loss { border-left-color: var(--loss-color); box-shadow: inset 0 0 12px rgba(255,17,0,0.02); }
+    .history-entry.pending { border-left-color: var(--pending-color); opacity:0.95; }
+
+    .history-entry small { color:var(--muted); font-size:12px }
+
+    /* Market feed area */
+    #marketHistoryBox { margin-top:16px; padding:12px; border-radius:12px; background:linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.55)); font-family:'Share Tech Mono',monospace; color:var(--win-color); border:1px solid rgba(255,255,255,0.02); max-height:320px; overflow:auto; }
+
+    /* Stats bar */
+    #statsDisplay { margin-top:12px; padding:12px; border-radius:10px; text-align:center; background:linear-gradient(90deg, rgba(0,0,0,0.35), rgba(0,0,0,0.5)); border:1px solid rgba(255,255,255,0.02); font-size:15px; }
+    #statsDisplay span { font-weight:900; padding:0 8px; }
+
+    /* Footer signature */
+    .footer-sig { margin-top:18px; display:flex; justify-content:space-between; align-items:center; gap:12px; border-top:1px solid rgba(255,255,255,0.02); padding-top:14px; }
+    .signature { font-size:18px; font-weight:900; background:linear-gradient(120deg,var(--win-color),var(--text),var(--loss-color)); -webkit-background-clip:text; color:transparent; letter-spacing:1px; }
+    .tg-channel-link { display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:var(--win-color); background:rgba(0,0,0,0.35); padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.02); }
+
+    /* LOCK overlay (Glassmorphism REMOVED) */
+    .lock-overlay {
+      position:fixed; inset:0; z-index:60;
+      display:flex; align-items:center; justify-content:center; padding:22px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.75));
+      /* backdrop-filter: blur(6px); -- REMOVED */
+    }
+    .lock-card {
+      width:100%; max-width:720px; border-radius:16px; padding:26px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.78)),
+        linear-gradient(-45deg, rgba(255,17,0,0.05), rgba(240,185,11,0.03)); /* Red/Gold animation */
+      background-size:800% 800%;
+      animation: argb 18s linear infinite;
+      border:2px solid rgba(255,255,255,0.03);
+      box-shadow: 0 30px 120px rgba(0,0,0,0.9);
+    }
+    @keyframes argb { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+
+    .lock-title { text-align:center; font-size:26px; margin-bottom:6px; background:linear-gradient(120deg,var(--pending-color),var(--text)); -webkit-background-clip:text; color:transparent; font-weight:900; }
+    .lock-sub { text-align:center; color:var(--muted); margin-bottom:12px; font-family:'Share Tech Mono',monospace; font-size:13px; }
+
+    .pw-input { width:100%; padding:14px 16px; border-radius:12px; background:rgba(0,0,0,0.45); color:var(--win-color); border:1px solid rgba(255,255,255,0.03); font-family:'Share Tech Mono',monospace; font-size:15px; outline:none; box-shadow: inset 0 0 12px rgba(240,185,11,0.02); }
+    .pw-row { display:flex; gap:12px; margin-top:14px; }
+    .btn { cursor:pointer; padding:12px 16px; border-radius:10px; font-weight:900; border:none; font-family:'Orbitron',sans-serif; }
+    .btn-unlock { flex:1; background: linear-gradient(90deg,var(--win-color),var(--accent-color)); /* Gold to Orange */ color:#000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+    .btn-clear { background: rgba(255,255,255,0.03); color:var(--text); border:1px solid rgba(255,255,255,0.02); }
+
+    .hint { margin-top:12px; color:var(--muted); text-align:center; font-size:13px; }
+
+    /* External links */
+    .external-links { margin-top:18px; display:flex; gap:12px; flex-direction:column; }
+    .icon-link { display:flex; align-items:center; gap:12px; padding:12px; border-radius:12px; font-weight:900; font-size:14px; text-decoration:none; color:#000; }
+    .icon-link.dkwin { background: var(--pending-color); box-shadow: 0 8px 30px rgba(240,185,11,0.06); }
+    .icon-link.telegram { background: var(--accent-color); box-shadow: 0 8px 30px rgba(255,72,0,0.06); color:#000 }
+
+    .icon-link .icon { width:44px; height:44px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; font-weight:900; background:#000; color:var(--pending-color); }
+
+    /* Congrats / PULSE banner (Glitch REMOVED) */
+    #congratsBanner { display:none; margin:-26px -26px 10px -26px; padding:16px; border-radius:12px; background:linear-gradient(180deg, rgba(240,185,11,0.06), rgba(0,0,0,0)); border-bottom:2px solid rgba(255,17,0,0.12); }
+    .congrats-title { font-size:18px; color:var(--pending-color); font-weight:900; }
+    .pulse-text { /* REPLACED .glitch */
+      font-family:'Share Tech Mono',monospace; 
+      font-size:28px; 
+      font-weight:900; 
+      color:var(--loss-color); 
+      position:relative;
+      animation: pulse-glow 1.5s infinite alternate;
+    }
+    /* REMOVED .glitch::before, .glitch::after */
+    
+    @keyframes pulse-glow { /* NEW animation */
+      from { text-shadow: 0 0 10px var(--loss-color); }
+      to { text-shadow: 0 0 25px var(--accent-color); }
+    }
+    /* DELETED @keyframes glitch1, @keyframes glitch2 */
+
+    /* Responsive tweaks */
+    @media (max-width:900px) {
+      .cols { flex-direction:column; }
+      .brand .logo { width:48px; height:48px; font-size:18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+
+      <div class="lock-overlay" id="lockOverlay" role="dialog" aria-modal="true">
+        <div class="lock-card" role="document" aria-label="Access Card">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div class="lock-title">⚡ SAZIM + CHISTY 1V ⚡</div>
+            <div class="lock-sub">Authentication required for <strong>TRX ROBIN VAI</strong> mainframe.</div>
+          </div>
+
+          <input id="pwInput" class="pw-input" type="password" placeholder="Enter security key" autocomplete="off" aria-label="Security Key" />
+          <div class="pw-row">
+            <button id="unlockBtn" class="btn btn-unlock" aria-label="Decrypt Access">Decrypt Access</button>
+            <button id="clearBtn" class="btn btn-clear" aria-label="Clear Input">Clear Input</button>
+          </div>
+
+          <div class="hint">Warning: Unauthorized access detected. Multiple failed attempts may initiate lockdown protocols.</div>
+
+          <div class="external-links" aria-hidden="false">
+            <a class="icon-link dkwin" href="https://dkwin9.com/#/register?invitationCode=584571809476" target="_blank" rel="noopener noreferrer">
+              <span class="icon">D</span>
+              <div style="display:flex;flex-direction:column;line-height:1;">
+                <strong style="font-size:14px">Register on DKWin</strong>
+                <small style="color:var(--muted)">Official registration link</small>
+              </div>
+            </a>
+
+            <a class="icon-link telegram" href="https://t.me/King_Sami_Official_01" target="_blank" rel="noopener noreferrer">
+              <span class="icon">Tg</span>
+              <div style="display:flex;flex-direction:column;line-height:1;">
+                <strong style="font-size:14px">@Chisty_Official_Admin</strong>
+                <small style="color:var(--muted)">Contact Admin</small>
+              </div>
+            </a>
+
+            <a class="icon-link telegram" href="https://t.me/TRX_RAKIB_trader" target="_blank" rel="noopener noreferrer">
+              <span class="icon">C</span>
+              <div style="display:flex;flex-direction:column;line-height:1;">
+                <strong style="font-size:14px">Join Channel</strong>
+                <small style="color:var(--muted)">Announcements & Updates</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="topbar" aria-hidden="false">
+        <div class="brand">
+          <div class="logo">TR</div>
+          <div style="display:flex;flex-direction:column;">
+            <h1>🚩 SAZIM + CHISTY 🚩</h1>
+            <div class="subtitle">Premium prediction · S-C dashboard · live-monitor</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="font-family:'Share Tech Mono',monospace;color:var(--muted);font-size:13px">Status: <strong style="color:var(--win-color);margin-left:6px">Locked</strong></div>
+          <div style="font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace">v1.0 · Secure</div>
+        </div>
+      </div>
+
+      <div id="congratsBanner" style="display:none">
+        <div class="congrats-title">CONGRATS!</div>
+        <div class="pulse-text" id="glitchText"></div> </div>
+
+      <div class="cols" role="main">
+        <div class="left">
+          <div class="panel" aria-labelledby="periodDisplayLabel">
+            <div class="label" id="periodDisplayLabel">Current Period</div>
+            <div id="periodDisplay" class="period">-</div>
+
+            <div class="label" style="margin-top:14px">Predicted Numbers</div>
+            <div id="predictionDisplay" class="prediction">-, -</div>
+
+            <div class="label" style="margin-top:14px">Big / Small</div>
+            <div id="bigSmallDisplay" class="bigsmall">-</div>
+
+            <div class="label" style="margin-top:18px">📜 Prediction History</div>
+            <div id="historyBox" aria-live="polite">
+              <div style="text-align:center;color:var(--muted);padding:12px">No predictions yet</div>
+            </div>
+
+            <div id="statsDisplay" style="margin-top:16px">
+              <span style="color:var(--win-color)">Wins: 0</span> |
+              <span style="color:var(--loss-color)">Losses: 0</span> |
+              <span style="color:var(--pending-color)">Pending: 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="panel">
+            <div class="label">📡 Real-Time Market Feed</div>
+            <div id="marketHistoryBox">Loading live market...</div>
+
+            <div style="margin-top:14px" class="label">Quick Tools</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button onclick="copyPrediction()" class="btn btn-unlock" title="Copy latest prediction">Copy Latest</button>
+              <button onclick="exportHistory()" class="btn btn-clear" title="Export history (JSON)">Export History</button>
+              <button onclick="clearHistory()" class="btn btn-clear" title="Clear local history">Clear History</button>
+            </div>
+
+            <div style="margin-top:16px;font-size:13px;color:var(--muted)" class="label">Notes</div>
+            <div style="font-family:'Share Tech Mono',monospace;color:var(--muted);font-size:13px;line-height:1.5">
+              • Predictions are generated by local heuristic logic — use responsibly.<br>
+              • Live market feed updates every 5 seconds; if unavailable, data might be offline.<br>
+              • This UI preserves the original premium hacker-style look and animations.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-sig" role="contentinfo">
+        <div class="signature">DKWIN MENTOR — SAZIM + CHISTY 🚩</div>
+        <a class="tg-channel-link" href="https://t.me/vipsignaltop1hakesote" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--loss-color)" aria-hidden="true"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 11.9c-.88-.25-.89-.86.2-1.15l16.57-6.11c.76-.29 1.44.2 1.15.99L19.2 16.5c-.22.69-.74 1-1.28.63l-4.24-3.11-2.02 1.95c-.23.23-.41.41-.83.41z"/></svg>
+          <span>Channel</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ================== PASSWORD / LOCK HANDLING ================== */
+    const PAGE_PASSWORD = 'SAZIM+CHISTY'; // unchanged as requested
+    const overlay = document.getElementById('lockOverlay');
+    const pwInput = document.getElementById('pwInput');
+    const unlockBtn = document.getElementById('unlockBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const homeCard = document.querySelector('.card');
+    const periodDisplay = document.getElementById('periodDisplay');
+    const predictionDisplay = document.getElementById('predictionDisplay');
+    const bigSmallDisplay = document.getElementById('bigSmallDisplay');
+    const historyBox = document.getElementById('historyBox');
+    const marketHistoryBox = document.getElementById('marketHistoryBox');
+    const statsDisplay = document.getElementById('statsDisplay');
+    const congratsBanner = document.getElementById('congratsBanner');
+    const glitchText = document.getElementById('glitchText'); // Now .pulse-text
+
+    // Focus on input
+    pwInput.focus();
+
+    function showHome() {
+      overlay.style.display = 'none';
+      // keep card visible - it's already visible; re-init feeders
+      initPrediction();
+      loadMarketFeed();
+      setInterval(loadMarketFeed, 5000);
+    }
+
+    function shakeLock() {
+      const el = document.querySelector('.lock-card');
+      if(!el) return;
+      el.animate([
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-10px)' },
+        { transform: 'translateX(10px)' },
+        { transform: 'translateX(0)' }
+      ], { duration:420, iterations:1, easing:'ease-in-out' });
+    }
+
+    unlockBtn.addEventListener('click', ()=>{
+      const val = pwInput.value || '';
+      if(val === PAGE_PASSWORD) {
+        showHome();
+      } else {
+        shakeLock();
+        pwInput.value = '';
+        pwInput.focus();
+      }
+    });
+    clearBtn.addEventListener('click', ()=>{ pwInput.value = ''; pwInput.focus(); });
+    pwInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') unlockBtn.click(); });
+
+    /* ================== PREDICTION ENGINE (detailed & commented) ================== */
+    let lastPeriod = null;
+    let pastResults = []; // historical actual results from market
+    let historyLog = [];  // our predictions with period metadata
+    let marketHistoryData = []; // recent market feed
+
+    // generate a pseudo-unique period id based on UTC date + minute offset (keeps format stable)
+    function generatePeriodNumber() {
+      const now = new Date();
+      const utc = new Date(now.getTime() + now.getTimezoneOffset()*60000);
+      const year = utc.getFullYear();
+      const month = String(utc.getMonth()+1).padStart(2,'0');
+      const day = String(utc.getDate()).padStart(2,'0');
+      const minutes = utc.getHours() * 60 + utc.getMinutes();
+      // The original system used a pattern like yyyyMMdd1000XXXXX - replicate similar pattern:
+      return `${year}${month}${day}1000${10001 + minutes}`;
+    }
+
+    function getBigSmall(num) {
+      return (num >= 5) ? 'Big' : 'Small';
+    }
+
+    // The prediction algorithm: analyze recent frequency, alternating patterns, diffs
+    function getPrediction(currentPeriod) {
+      let prediction;
+      const recent = pastResults.slice(-25); // analyze last 25 actuals
+      let freq = Array(10).fill(0);
+      recent.forEach(n => { if(!isNaN(n)) freq[n]++; });
+
+      const minFreq = Math.min(...freq);
+      const leastFreqNums = freq.map((c,i) => c === minFreq ? i : null).filter(n => n !== null);
+
+      if(recent.length >= 4) {
+        const last = recent[recent.length-1];
+        const second = recent[recent.length-2];
+        const third = recent[recent.length-3];
+
+        // If an alternating parity pattern is observed, attempt to continue it
+        if((last % 2 !== second % 2) && (second % 2 === third % 2)) {
+          prediction = (last + 10 - second) % 10;
+        } else {
+          // arithmetic progression approach with wrap-around
+          let diff = (last - second + 10) % 10;
+          prediction = (last + diff + 10) % 10;
+        }
+
+        // if the chosen number appears too frequently, pick a least-frequent alternative
+        if(freq[prediction] > minFreq + 1 && leastFreqNums.length > 0) {
+          prediction = leastFreqNums[Math.floor(Math.random() * leastFreqNums.length)];
+        }
+      } else {
+        // fallback: rudimentary Big/Small bias based on last period digits
+        const sumDigits = [...currentPeriod.slice(-4)].reduce((s,d) => s + parseInt(d), 0);
+        prediction = (sumDigits % 10 >= 5) ? 9 : 0;
+      }
+
+      prediction = Math.max(0, Math.min(9, Math.round(prediction)));
+
+      // create alternative prediction making sure it differs and ideally opposite Big/Small
+      let alternative;
+      const predSize = getBigSmall(prediction);
+      const alternatives = [];
+      for(let i=0;i<10;i++){
+        if(i !== prediction && getBigSmall(i) !== predSize) alternatives.push(i);
+      }
+      if(alternatives.length > 0) alternative = alternatives[Math.floor(Math.random() * alternatives.length)];
+      else {
+        do { alternative = Math.floor(Math.random() * 10); } while(alternative === prediction);
+      }
+
+      return [prediction, alternative];
+    }
+
+    function updateCongratsBanner(streak) {
+      if(!congratsBanner) return;
+      if(streak >= 2) {
+        const text = `${streak} SUPER WIN`;
+        // glitchText.setAttribute('data-text', text); // Not needed for pulse
+        glitchText.textContent = text;
+        congratsBanner.style.display = 'block';
+      } else {
+        congratsBanner.style.display = 'none';
+      }
+    }
+
+    function renderHistory() {
+      // Render last up to 10 history entries
+      const toRender = historyLog.slice(0, 10);
+      let html = '';
+      let wins = 0, losses = 0, pending = 0;
+      let consecutiveWinStreak = 0;
+      let streakActive = true;
+
+      for(const e of toRender) {
+        const predNum = e.prediction[0];
+        const predSize = getBigSmall(predNum);
+        const marketEntry = marketHistoryData.find(m => (m.issueNumber ?? m.issue) === e.period);
+        let statusHtml = `<span style="color:var(--pending-color)">Pending...</span>`;
+        let cls = 'pending';
+
+        if(marketEntry) {
+          const actual = parseInt(marketEntry.number ?? marketEntry.num ?? 0);
+          const actualSize = getBigSmall(actual);
+          if(predSize === actualSize) {
+            statusHtml = `<span style="color:var(--win-color);font-weight:900">WIN</span>`;
+            cls = 'win';
+            wins++;
+            if(streakActive) consecutiveWinStreak++;
+          } else {
+            statusHtml = `<span style="color:var(--loss-color);font-weight:900">LOSS</span>`;
+            cls = 'loss';
+            losses++;
+            streakActive = false;
+          }
+        } else {
+          pending++;
+          streakActive = false;
+        }
+
+        html += `
+          <div class="history-entry ${cls}">
+            <div>
+              <div style="font-weight:800">${e.period}</div>
+              <small>Pred: ${e.prediction.join(', ')} (${predSize})</small>
+            </div>
+            <div style="text-align:right">${statusHtml}</div>
+          </div>
+        `;
+      }
+
+      historyBox.innerHTML = html || '<div style="text-align:center;color:var(--muted);padding:12px">No predictions yet</div>';
+
+      // UPDATED statsDisplay colors
+      statsDisplay.innerHTML = `<span style="color:var(--win-color)">Wins: ${wins}</span> | <span style="color:var(--loss-color)">Losses: ${losses}</span> | <span style="color:var(--pending-color)">Pending: ${pending}</span>`;
+
+      updateCongratsBanner(consecutiveWinStreak);
+    }
+
+    /* ================ Remote API (real market) - fallback safe calls ================ */
+    async function fetchResultFromAPI(){
+      // This function calls a remote API to fetch latest actual numbers (if available).
+      // It is wrapped with try/catch to avoid breaking the UI when remote is down.
+      try {
+        const res = await fetch("https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pageSize: 10,
+            pageNo: 1,
+            typeId: 1,
+            language: 0,
+            random: "4a0522c6ecd8410496260e686be2a57c",
+            signature: "334B5E70A0C9B8918B0B15E517E2069C",
+            timestamp: Math.floor(Date.now() / 1000)
+          })
+        });
+        const json = await res.json();
+        return json?.data?.list || [];
+      } catch(err) {
+        console.warn("fetchResultFromAPI error:", err);
+        return [];
+      }
+    }
+
+    async function updatePrediction() {
+      // get remote latest results (if any)
+      const results = await fetchResultFromAPI();
+      // compute period and update only on period change
+      const currentPeriod = generatePeriodNumber();
+      if(currentPeriod === lastPeriod) return;
+      lastPeriod = currentPeriod;
+
+      // if remote provides actual result for current period, store it in pastResults
+      const latestMarketEntry = results[0];
+      if(latestMarketEntry && (latestMarketEntry.issueNumber === currentPeriod || latestMarketEntry.issue === currentPeriod)) {
+        const actual = parseInt(latestMarketEntry.number ?? latestMarketEntry.num ?? 0);
+        if(!isNaN(actual) && !pastResults.includes(actual)) {
+          pastResults.push(actual);
+          // keep a cap on stored history
+          if(pastResults.length > 400) pastResults.shift();
+        }
+      }
+
+      // produce our prediction pair
+      const [pred, alt] = getPrediction(currentPeriod);
+      const sizeType = pred >= 5 ? 'BIG' : 'SMALL';
+
+      periodDisplay.textContent = ` ${currentPeriod}`;
+      predictionDisplay.textContent = `${pred}, ${alt}`;
+      bigSmallDisplay.textContent = sizeType;
+      // UPDATED bigSmallDisplay colors
+      bigSmallDisplay.style.color = sizeType === 'BIG' ? 'var(--loss-color)' : 'var(--win-color)';
+      bigSmallDisplay.style.borderColor = sizeType === 'BIG' ? 'var(--loss-color)' : 'var(--win-color)';
+
+      // push to history log
+      historyLog.unshift({ period: currentPeriod, prediction: [pred, alt], ts: Date.now() });
+      if(historyLog.length > 100) historyLog.pop(); // keep history manageable
+
+      renderHistory();
+    }
+
+    let predictionInterval = null;
+    function initPrediction() {
+      // immediate run then interval
+      updatePrediction();
+      if(predictionInterval) clearInterval(predictionInterval);
+      predictionInterval = setInterval(updatePrediction, 5000);
+    }
+
+    /* ================ Market Feed (GET history) ================ */
+    const HISTORY_API = "https://draw.ar-lottery01.com/WinGo/WinGo_1M/GetHistoryIssuePage.json";
+
+    async function loadMarketFeed() {
+      try {
+        const res = await fetch(HISTORY_API + "?ts=" + Date.now());
+        const data = await res.json();
+        const list = (data.data && data.data.list) ? data.data.list.slice(0, 12) : [];
+        marketHistoryData = list;
+        if(!list.length) {
+          marketHistoryBox.innerHTML = "<div style='text-align:center;color:var(--muted);padding:12px'>No live market data available</div>";
+          renderHistory();
+          return;
+        }
+
+        // render market feed items with color-coding
+        marketHistoryBox.innerHTML = list.map(item => {
+          const num = parseInt(item.number ?? item.num ?? 0);
+          const size = getBigSmall(num);
+          
+          // UPDATED color logic
+          let colorVal = 'var(--pending-color)';
+          if([1,3,7,9].includes(num)) colorVal = 'var(--win-color)'; // Was cyan
+          else if([2,4,6,8].includes(num)) colorVal = 'var(--loss-color)'; // Was magenta
+          else colorVal = 'var(--pending-color)'; // Was yellow (0, 5)
+
+          const sizeColor = (size === 'Big') ? 'var(--loss-color)' : 'var(--win-color)'; // Was magenta/cyan
+          const issue = item.issueNumber ?? item.issue ?? '—';
+          
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;margin-bottom:10px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.5));border-left:6px solid ${colorVal};">
+              <div style="font-family:'Share Tech Mono',monospace;color:var(--muted)">${issue}</div>
+              <div style="font-size:20px;font-weight:900;color:${colorVal};text-shadow:0 0 8px ${colorVal}">${isNaN(num) ? '-' : num}</div>
+              <div style="font-weight:900;color:${sizeColor}">${size}</div>
+              <div style="width:10px;height:10px;border-radius:50%;background:${colorVal};box-shadow:0 0 6px ${colorVal}"></div>
+            </div>
+          `;
+        }).join('');
+
+        renderHistory(); // update statuses
+      } catch(err) {
+        console.warn("Market feed error", err);
+        marketHistoryBox.innerHTML = "<div style='text-align:center;color:var(--muted);padding:12px'>Market fetch failed</div>";
+      }
+    }
+
+    /* ================ MATRIX EFFECT (DELETED) ================ */
+    /* All matrix JS has been removed to change the theme */
+
+    /* ================ Utilities: copy / export / clear history ================ */
+    function copyPrediction() {
+      if(!historyLog.length) { alert('No prediction to copy'); return; }
+      const latest = historyLog[0];
+      const text = `Period: ${latest.period} • Pred: ${latest.prediction.join(', ')}`;
+      navigator.clipboard?.writeText(text).then(()=> alert('Latest prediction copied to clipboard')).catch(()=> alert('Copy failed'));
+    }
+
+    function exportHistory() {
+      const blob = new Blob([JSON.stringify(historyLog, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'prediction_history.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearHistory() {
+      if(!confirm('Clear local prediction history?')) return;
+      historyLog = [];
+      pastResults = [];
+      renderHistory();
+    }
+
+    /* ================ Init: safe startup (do not call remote until unlocked) ================ */
+    // Everything will start when correct password entered (showHome called)
+    // But we attach some safe event listeners now
+    document.addEventListener('DOMContentLoaded', ()=> {
+      // nothing heavy until unlocked
+    });
+
+    /* ================ Extra: keep-alive & graceful fallback ================ */
+    // if the user keeps the overlay open for long, still poll minimal background tasks
+    setInterval(()=> {
+      // keep local time tick for UI (non-blocking)
+      // Not fetching remote APIs to respect locked state
+    }, 1000 * 60);
+
+    /* ================================== END SCRIPT ================================== */
+  </script>
+</body>
+</html>
